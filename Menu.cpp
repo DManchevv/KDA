@@ -4,8 +4,8 @@
 #include "Automat.h"
 #include "AutomatContainer.h"
 #include "State.h"
-AutomatContainer SaveAutomates;
-int automatcounter = 0;
+static AutomatContainer SaveAutomates;
+static int automatcounter = 0;
 void Introduction() {
 	std::cout << "Welcome to my project's menu. Here are the available commands: " << std::endl;
 	std::cout << "Open - opens a new file for a new DFA." << std::endl;
@@ -15,29 +15,28 @@ void Introduction() {
 	std::cout << "Union - unions two automates by their id. " << std::endl;
 }
 void StartMenu() {
-	char alphabet[40];
-	int numb;
-	char letter;
-	std::string storeLetter;
-	int To;
-	int StatesNumb;
-	int StartState;
-	int NumbFinalStates;
-	int FinalStates[100];
-	int NumbTransitions; 
-	std::ifstream File;
 	std::string commands;
+	std::ifstream File;
 	while (true) {
 		std::cout << "Please enter a command." << std::endl;
 		std::cin >> commands;
 		if (commands == "Open" or commands == "open") {
+			std::string alphabet;
+			int numb;
+			char letter;
+			std::string storeLetter;
+			int To;
+			int StatesNumb;
+			int StartState;
+			int NumbFinalStates;
+			int NumbTransitions;
 			std::string filename;
 			std::cout << "Please enter the path of the file you want to open." << std::endl;
 			std::cin >> filename;
 			File.open(filename);
 			if (!File) {
 				std::cout << "Unable to open file";
-				exit(1);
+				exit(0);
 			}
 			if (File.is_open()) {
 				Automat newAutomat;
@@ -46,6 +45,7 @@ void StartMenu() {
 				newAutomat.setStatesNumb(StatesNumb);
 				newAutomat.setStartState(StartState);
 				newAutomat.setNumbFinal(NumbFinalStates);
+				int* FinalStates = new int[StatesNumb];
 				//	std::cout << "Your automat's alphabet is: " << alphabet << std::endl;
 				//	std::cout << "The number of the states in the automat is: " << StatesNumb << std::endl;
 				//	std::cout << "The starting state of the automat is on position: " << StartState << std::endl;
@@ -69,6 +69,7 @@ void StartMenu() {
 				}
 				SaveAutomates.addAutomat(newAutomat);
 				SaveAutomates.Container[automatcounter].setID(automatcounter);
+				//delete[] FinalStates;
 			}
 			File.close();
 			automatcounter++;
@@ -82,15 +83,18 @@ void StartMenu() {
 			int PrintID;
 			std::cout << "Enter the ID of the automat you want to print. " << std::endl;
 			std::cin >> PrintID;
-			std::cout << "The number of states of your automat is: " << SaveAutomates.Container[PrintID].getStatesNumb() << std::endl;
-			std::cout << "The ID of the start state is: " << SaveAutomates.Container[PrintID].getStartState() << std::endl;
-			std::cout << "The size is: " << SaveAutomates.Container[PrintID].getSize() << std::endl;
-			for (size_t i = 0; i < SaveAutomates.Container[PrintID].getSize(); i++) {
-				for (std::multimap<char, int>::iterator it = SaveAutomates.Container[PrintID].States[i].Transition.begin(); it != SaveAutomates.Container[PrintID].States[i].Transition.end(); it++)
-				{
-					SaveAutomates.Container[PrintID].PrintStateID(i);
-					std::cout << it->first << " -> " << it->second << std::endl;
-					SaveAutomates.Container[PrintID].PrintStates(i);
+			if (PrintID > automatcounter - 1 or PrintID < 0) std::cout << "Automat's ID is not found. Error #2" << std::endl;
+			else {
+				std::cout << "The number of states of your automat is: " << SaveAutomates.Container[PrintID].getStatesNumb() << std::endl;
+				std::cout << "The ID of the start state is: " << SaveAutomates.Container[PrintID].getStartState() << std::endl;
+				std::cout << "The size is: " << SaveAutomates.Container[PrintID].getSize() << std::endl;
+				for (size_t i = 0; i < SaveAutomates.Container[PrintID].getSize(); i++) {
+					for (std::multimap<char, int>::iterator it = SaveAutomates.Container[PrintID].States[i].Transition.begin(); it != SaveAutomates.Container[PrintID].States[i].Transition.end(); it++)
+					{
+						SaveAutomates.Container[PrintID].PrintStateID(i);
+						std::cout << it->first << " -> " << it->second << std::endl;
+						SaveAutomates.Container[PrintID].PrintStates(i);
+					}
 				}
 			}
 		}
@@ -130,37 +134,91 @@ void StartMenu() {
 			int UnionNumbTransitions;
 			int Final_One = SaveAutomates.Container[UnionID1].getNumbFinal();
 			int Final_Two = SaveAutomates.Container[UnionID2].getNumbFinal();
-			//UnionedAlphabet = SaveAutomates.Container[UnionID1].getAlphabet() + SaveAutomates.Container[UnionID2].getAlphabet();
-			UnionStatesNumb = SaveAutomates.Container[UnionID1].getStatesNumb() + SaveAutomates.Container[UnionID2].getStatesNumb() + 1;
+			int States_One = SaveAutomates.Container[UnionID1].getStatesNumb();
+			int States_Two = SaveAutomates.Container[UnionID2].getStatesNumb();
+			UnionedAlphabet = SaveAutomates.Container[UnionID1].getAlphabet() + SaveAutomates.Container[UnionID2].getAlphabet();
+			UnionAutomat.setAlphabet(UnionedAlphabet);
+			UnionStatesNumb = States_One + States_Two + 1;
 			UnionNumbFinalStates = Final_One + Final_Two;
-			std::cout << UnionNumbFinalStates;
 			UnionNumbTransitions = SaveAutomates.Container[UnionID1].getNumbTransitions() + SaveAutomates.Container[UnionID2].getNumbTransitions() + 2;
-			int* UnionFinalStates = new int[UnionNumbFinalStates + 1];
-			/*for (size_t i = 0; i < Final_One; i++) {
-				if (i == SaveAutomates.Container[UnionID1].getFinalStates(i)) {
-					UnionFinalStates[i + 1] = i;
-				}
+			int* UnionFinalStates = new int[UnionStatesNumb + 1];
+			for (size_t i = 0; i < States_One; i++) {
+
+				if (SaveAutomates.Container[UnionID1].States[i].getFinal()) {
+					UnionFinalStates[i + 1] = i + 1;
+			}
 				else UnionFinalStates[i + 1] = -1;
 			}
-			for (size_t i = 0; i < Final_Two; i++) {
-				if (i == SaveAutomates.Container[UnionID2].getFinalStates(i)) {
-					UnionFinalStates[i + Final_One + 1] = i + Final_One;
+			for (size_t i = 0; i < States_Two; i++) {
+				if (SaveAutomates.Container[UnionID2].States[i].getFinal()) {
+					UnionFinalStates[i + States_One + 1] = i + States_One + 1;
 				}
-				else UnionFinalStates[i + Final_One + 1] = -1;
+				else UnionFinalStates[i + States_One + 1] = -1;
 			}
-			for (size_t i = 0; i < UnionNumbFinalStates; i++) {
-				std::cout << UnionFinalStates[i] << std::endl;
-			}
+		
 			UnionAutomat.setStartState(0);
-			UnionAutomat.setFinalStates(UnionFinalStates);
-			UnionAutomat.setStatesNumb(UnionStatesNumb);
+			State UnionStartState;
+			UnionStartState.setID(0);
+			UnionFinalStates[0] = -1;
+			int BonusStateOne = 0;
+			int BonusStateTwo = 0;
+				for (std::multimap<char, int>::iterator it = SaveAutomates.Container[UnionID1].States[0].Transition.begin(); it != SaveAutomates.Container[UnionID1].States[0].Transition.end(); it++)
+				{
+					if (it->second == 0) {
+						BonusStateOne = 1;
+						UnionStartState.Transition.insert(std::pair <char, int>(it->first, 1));
+					}
+				}
+				for (std::multimap<char, int>::iterator it = SaveAutomates.Container[UnionID2].States[0].Transition.begin(); it != SaveAutomates.Container[UnionID2].States[0].Transition.end(); it++)
+				{
+					if (it->second == 0) {
+						BonusStateTwo = 1;
+						UnionStartState.Transition.insert(std::pair <char, int>(it->first, 1 + States_One - 1 + BonusStateOne));
+					}
+				}
+				UnionAutomat.addState(UnionStartState);
+				UnionAutomat.setStatesNumb(UnionStatesNumb - 2 + BonusStateOne + BonusStateTwo);
+				UnionAutomat.setNumbFinal(UnionNumbFinalStates);
+				for (size_t i = 0; i < UnionStatesNumb; i++) {
+					std::cout << UnionFinalStates[i] << std::endl;
+				}
+				UnionAutomat.setFinalStates(UnionFinalStates);
+				for (size_t i = 0; i < States_One; i++) {
+					for (std::multimap<char, int>::iterator it = SaveAutomates.Container[UnionID1].States[i].Transition.begin(); it != SaveAutomates.Container[UnionID1].States[i].Transition.end(); it++)
+					{
+						if (it->second == 0 and i != 0) {
+							CheckState(UnionAutomat, UnionedAlphabet, i + BonusStateOne, it->first, 0, UnionStatesNumb, UnionFinalStates);
+							//UnionAutomat.States[i + BonusStateOne].Transition.insert(std::pair <char, int>(it->first, it->second ));
+						}
+						else {
+							CheckState(UnionAutomat, UnionedAlphabet, i + BonusStateOne, it->first, it->second + BonusStateOne, UnionStatesNumb, UnionFinalStates);
+							//UnionAutomat.States[i + BonusStateOne].Transition.insert(std::pair <char, int>(it->first, it->second + BonusStateOne));
+						}
+						std::cout << i + BonusStateOne << " : " << it->first << " - > " << it->second + BonusStateOne << std::endl;
+					}
+				}
+				for (size_t i = 0; i < States_Two; i++) {
+					for (std::multimap<char, int>::iterator it = SaveAutomates.Container[UnionID2].States[i].Transition.begin(); it != SaveAutomates.Container[UnionID2].States[i].Transition.end(); it++)
+					{
+						if (i == 0) CheckState(UnionAutomat, UnionedAlphabet, 0, it->first, it->second + BonusStateOne + States_One - 1, UnionStatesNumb, UnionFinalStates);
+							//UnionAutomat.States[i + BonusStateTwo].Transition.insert(std::pair <char, int>(it->first, it->second + BonusStateOne + States_One - 1));
+						else {
+							if (it->second == 0) CheckState(UnionAutomat, UnionedAlphabet, i + States_One - 1 + BonusStateTwo + BonusStateOne, it->first, 0, UnionStatesNumb, UnionFinalStates); 
+								//UnionAutomat.States[i + States_One - 1 + BonusStateTwo + BonusStateOne].Transition.insert(std::pair <char, int>(it->first, 0));
+							else CheckState(UnionAutomat, UnionedAlphabet, i + States_One - 1 + BonusStateTwo + BonusStateOne, it->first, it->second + BonusStateOne + States_One - 1 + BonusStateTwo, UnionStatesNumb, UnionFinalStates);
+								//UnionAutomat.States[i + States_One - 1 + BonusStateTwo + BonusStateOne].Transition.insert(std::pair <char, int>(it->first, it->second + BonusStateOne + States_One - 1 + BonusStateTwo));
+						}
+							//std::cout << i + BonusStateOne + BonusStateTwo + States_One - 1 << " : " << it->first << " - > " << it->second + BonusStateOne + States_One - 1 + BonusStateTwo << std::endl;
+					}
+				}
+		
 			SaveAutomates.addAutomat(UnionAutomat);
 			SaveAutomates.Container[automatcounter].setID(automatcounter);
-			automatcounter++;*/
-			//UnionAutomat.setAlphabet()
+			automatcounter++;
+			delete[] UnionFinalStates;
 		}
 		if (commands == "Exit" or commands == "exit") {
-			exit(1);
+			break;
 		}
 	}
 }
@@ -210,7 +268,7 @@ void Savefile(int ID) {
 		SaveFile << numb << " " << letter << " " << To << std::endl;
 	}
 }
-void CheckState(Automat& obj, const char* alphabet, int id, char Letter, int To, int N, const int* Final) {
+void CheckState(Automat& obj, std::string alphabet , int id, char Letter, int To, int N, const int* Final) {
 	if (isValid(alphabet, Letter)) {
 		if (id >= obj.getSize()) {
 			State NewState;
@@ -234,12 +292,15 @@ void CheckState(Automat& obj, const char* alphabet, int id, char Letter, int To,
 		exit(0);
 	}
 }
-bool isValid(const char* alphabet, char symb) {
+bool isValid(std::string alphabet, char symb) {
 	bool IsFound = false;
-	for (size_t i = 0; i < strlen(alphabet); i++) {
+	for (size_t i = 0; i < alphabet.length(); i++) {
 		if (symb == alphabet[i]) {
 			return true;
 		}
 	}
 	return false;
+}
+void AddState(Automat& obj, std::string alphabet, int id, char Letter, int To, int N, const int* Final) {
+
 }
