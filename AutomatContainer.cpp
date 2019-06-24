@@ -10,10 +10,22 @@ AutomatContainer::~AutomatContainer() {
 AutomatContainer::AutomatContainer(const AutomatContainer& CopyFrom) {
 	id = CopyFrom.id;
 	Size = CopyFrom.Size;
-	Container = new Automat[CopyFrom.Size + 1];
+	Container = new Automat[CopyFrom.Size];
 	for (size_t i = 0; i < CopyFrom.Size; i++) {
 		Container[i] = CopyFrom.Container[i];
 	}
+}
+AutomatContainer& AutomatContainer::operator=(const AutomatContainer & other) {
+	if (this != &other) {
+		id = other.id;
+		Size = other.Size;
+		delete[] Container;
+		Container = new Automat[other.Size];
+		for (size_t i = 0; i < other.Size; i++) {
+			Container[i] = other.Container[i];
+		}
+	}
+	return *this;
 }
 void AutomatContainer::setID(const int newID) {
 	id = newID;

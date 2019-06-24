@@ -9,6 +9,7 @@ public:
 	const int getID() const; // Getting ID
 	void setID(const int newID); // Setting ID
 	void setFinalTrue(); // Setting State to Final
+	void setFinalFalse();
 	void print(); // Printing State
 	const bool getFinal() const; // Checking if it is final
 	std::multimap<char, int> Transition; // Map with transitions

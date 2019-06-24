@@ -8,6 +8,7 @@ public:
 	AutomatContainer(); 
 	~AutomatContainer();
 	AutomatContainer(const AutomatContainer& CopyFrom);
+	AutomatContainer& operator=(const AutomatContainer& other);
 	Automat* Container; // Pointer for the Automats in the container
 	void addAutomat(Automat newAutomat); // Adding new Automat in the container
 	void setID(const int newID); // Setting ID

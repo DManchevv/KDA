@@ -17,6 +17,9 @@ void State::setID(const int newID) {
 void State::setFinalTrue() {
 	isFinal = true;
 }
+void State::setFinalFalse() {
+	isFinal = false;
+}
 const bool State::getFinal() const{
 	return isFinal;
 }

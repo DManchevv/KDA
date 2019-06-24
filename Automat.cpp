@@ -5,10 +5,12 @@ Automat::Automat() {
 	size = 0;
 	States = new State[size];
 	id = numb = To = StatesNumb = StartState = NumbFinalStates = NumbTransitions = 0;
+	FinalStates = nullptr;
 }
 
 Automat::~Automat() {
-
+	delete[] States;
+	delete[] FinalStates;
 }
 Automat::Automat(const Automat& CopyFrom) {
 	setAlphabet(CopyFrom.alphabet);
@@ -18,15 +20,39 @@ Automat::Automat(const Automat& CopyFrom) {
 	setStartState(CopyFrom.StartState);
 	setNumbFinal(CopyFrom.NumbFinalStates);
 	setNumbTransitions(CopyFrom.NumbTransitions);
-	FinalStates = new int[CopyFrom.NumbFinalStates + 1];
-	for (size_t i = 0; i < CopyFrom.size; i++) {
+	FinalStates = new int[CopyFrom.StatesNumb];
+	for (size_t i = 0; i < CopyFrom.StatesNumb; i++) {
 		FinalStates[i] = CopyFrom.FinalStates[i];
 	}
 	size = CopyFrom.size;
-	States = new State[CopyFrom.size + 1];
+	States = new State[CopyFrom.size];
 	for (size_t i = 0; i < CopyFrom.size; i++) {
 		States[i] = CopyFrom.States[i];
 	}
+}
+Automat& Automat::operator=(const Automat& other)
+{
+	if (this != &other) {
+		delete[] States;
+		delete[] FinalStates;
+		setAlphabet(other.alphabet);
+		setID(other.id);
+		setNumb(other.numb);
+		setStatesNumb(other.StatesNumb);
+		setStartState(other.StartState);
+		setNumbFinal(other.NumbFinalStates);
+		setNumbTransitions(other.NumbTransitions);
+		FinalStates = new int[other.StatesNumb];
+		for (size_t i = 0; i < other.StatesNumb; i++) {
+			FinalStates[i] = other.FinalStates[i];
+		}
+		size = other.size;
+		States = new State[other.size];
+		for (size_t i = 0; i < other.size; i++) {
+			States[i] = other.States[i];
+		}
+	}
+	return *this;
 }
 void Automat::setID(const int newID) {
 	id = newID;
@@ -62,7 +88,7 @@ void Automat::setTo(const int newTo) {
 }
 void Automat::setNumbFinal(const int newNumbFinal) {
 	NumbFinalStates = newNumbFinal;
-	FinalStates = new int[StatesNumb + 1];
+	
 }
 void Automat::setNumbTransitions(const int newNumbTransitions) {
 	NumbTransitions = newNumbTransitions;
@@ -72,8 +98,7 @@ void Automat::setStartState(const int newStartState) {
 }
 void Automat::setFinalStates(int* newFinalStates) {
 	for (size_t i = 0; i < StatesNumb; i++) {
-		if (newFinalStates[i] != -1) FinalStates[i] = newFinalStates[i];
-		else FinalStates[i] = -1;
+		FinalStates[i] = newFinalStates[i];
 	}
 }
 void Automat::setAlphabet(std::string newAlphabet) {
@@ -81,6 +106,7 @@ void Automat::setAlphabet(std::string newAlphabet) {
 }
 void Automat::setStatesNumb(const int newStatesNumb) {
 	StatesNumb = newStatesNumb;
+	FinalStates = new int[StatesNumb + 1];
 }
 const int Automat::getNumb() const{
 	return numb;

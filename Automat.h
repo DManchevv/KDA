@@ -1,6 +1,7 @@
 #pragma once
 #include "State.h"
 class Automat {
+	char epsilon = 17;
 	std::string alphabet; // automat's alphabet
 	int size; // the size of the current alphabet, used to store the number of states when adding a new one
 	int id; // the id of the automat
@@ -18,6 +19,7 @@ public:
 	Automat();
 	~Automat();
 	Automat(const Automat& CopyFrom);
+	Automat& operator=(const Automat& other);
 	const int getSize() const;
 	void addState(State newState);
 	void PrintStates(int index);
