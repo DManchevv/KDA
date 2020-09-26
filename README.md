@@ -1,4 +1,5 @@
 ## KDA
+В това repo има включени .txt file-ове.
 Тема 4 от: <BR>
 <a href="https://github.com/DManchevv/KDA2/blob/master/OOP_Projects.pdf">OOP Projects</a>
 
